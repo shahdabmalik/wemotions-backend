@@ -1,8 +1,10 @@
 const OpenAI = require("openai");
 const Idea = require("../models/ideaModel");
+
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 })
+
 // --------------------------------Submit Idea--------------------------------
 const addIdea = async (req, res) => {
     try {
@@ -22,7 +24,7 @@ const addIdea = async (req, res) => {
         // const idea = await Idea.create({
         //     authot
         // })
-        res.status(200).json({ message: "Idea submitted", idea });
+        res.status(200).json({ message: "Idea submitted", result });
     } catch (error) {
         console.log(error);
         res.status(500).json(error);

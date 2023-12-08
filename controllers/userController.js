@@ -39,9 +39,9 @@ const registerUser = async (req, res) => {
         const token = generateToken(user._id)
         // return data
         if (user) {
-            const { _id, name, email } = user
+            const { _id, name, username, email, slug } = user
             res.status(201).json({
-                _id, name, email, token
+                user: { _id, name, username, email, slug }, token
             })
         }
     } catch (error) {
@@ -63,13 +63,12 @@ const loginUser = async (req, res) => {
             $or: [{ username: emailUsername }, { email: emailUsername }]
         })
         // check password is correct
-        const passwordIsCorrect = await bcrypt.compare(password, user.password)
-        if (user && passwordIsCorrect) {
+        if (user && await bcrypt.compare(password, user.password)) {
             const token = generateToken(user._id)
-            const { _id, name, username, email } = user
-            return res.status(200).json({ _id, name, username, email, token })
+            const { _id, name, username, email, slug } = user
+            return res.status(200).json({ user: { _id, name, username, email, slug }, token })
         } else {
-            return res.status(400).json({message: "Invalid credentials"})
+            return res.status(400).json({ message: "Invalid credentials" })
         }
     } catch (error) {
         console.log(error);

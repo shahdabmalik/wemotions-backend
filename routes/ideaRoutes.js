@@ -1,8 +1,9 @@
 const { addIdea } = require('../controllers/ideaControllers')
+const protect = require('../middlewares/authMiddleware')
 
 const router = require('express').Router()
 
-router.post("/:person/add", addIdea)
+router.post("/:person/add", protect, addIdea)
 
 
 

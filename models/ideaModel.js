@@ -1,8 +1,14 @@
 const mongoose = require('mongoose')
 
 const ideaSchema = new mongoose.Schema({
-    name: {
-        type: String,
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    entity: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Entity",
         required: true
     },
     idea: {

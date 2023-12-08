@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
+const slug = require('mongoose-slug-updater')
+mongoose.plugin(slug)
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -22,6 +24,10 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    slug: {
+        type: String,
+        slug: "username"
     }
 }, { timestamps: true });
 
