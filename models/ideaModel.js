@@ -13,7 +13,8 @@ const ideaSchema = new mongoose.Schema({
     },
     idea: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     aiExplanation: {
         type: String,
