@@ -47,6 +47,90 @@ const addIdea = async (req, res) => {
     }
 }
 
+//----------------------------------- Delete and idea -----------------------------------
+
+const removeIdea = async (req, res) => {
+
+    try {
+
+        const { ideaId } = req.body;
+        // find the idea
+        const idea = await Idea.findById(ideaId)
+        if (!idea) {
+            return res.status(404).json({ message: "Error Removing, Idea not found" })
+        }
+        // see if user is the author of idea
+        const userIsAuthor = idea.author.toString() === req.user._id.toString()
+        if (!userIsAuthor) {
+            return res.status(401).json({ message: "Error Removing, You are not the author" })
+        }
+        // remove idea
+        await Idea.findByIdAndDelete(ideaId)
+        res.status(200).json({ message: "Idea Removed" })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error Removing" })
+    }
+
+}
+
+//----------------------------------- Vote an idea -----------------------------------
+const voteIdea = async (req, res) => {
+    try {
+
+        const { ideaId } = req.body;
+        // validation - check idead exists
+        const idea = await Idea.findById(ideaId)
+        if (!idea) {
+            return res.status(404).json({ message: "Error voting, Idean not found" })
+        }
+        // check if the user already voted
+        const alreadyVoted = idea.votes.voters.includes(req.user._id)
+        if (alreadyVoted) {
+            return res.status(400).json({ message: "You are already a voter" })
+        }
+        // add vote count and add user in voters
+        idea.votes.count = +1
+        idea.votes.voters.push(req.user._id)
+        await idea.save()
+        res.status(200).json({ message: "Voted" })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error voting, please try again" })
+    }
+}
+
+//----------------------------------- Dispose Vote -----------------------------------
+const downVoteIdea = async (req, res) => {
+
+    try {
+        const { ideaId } = req.body;
+        // validation - check idead exists
+        const idea = await Idea.findById(ideaId)
+        if (!idea) {
+            return res.status(404).json({ message: "Error Disposing, Idean not found" })
+        }
+        // check if the voter field contains userId
+        const validVoter = idea.votes.voters.includes(req.user._id)
+        if (!validVoter) {
+            return res.status(404).json({ message: "Error Disposing, You are not the voter" })
+        }
+        // Remove vote count and user from voters
+        idea.votes.count = idea.votes.count - 1
+        idea.votes.voters = idea.votes.voters.filter((userId) => userId.toString() !== req.user._id.toString())
+        await idea.save()
+        res.status(200).json({ message: "Vote disposed" })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error voting, please try again" })
+    }
+}
+
+
 module.exports = {
-    addIdea
+    addIdea,
+    removeIdea,
+    voteIdea,
+    downVoteIdea,
 }
