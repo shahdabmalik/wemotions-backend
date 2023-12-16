@@ -1,11 +1,17 @@
-const { registerUser, loginUser } = require('../controllers/userController')
+const { registerUser, loginUser, loginUserGoogle, loginStatus } = require('../controllers/userController')
 
 const router = require('express').Router()
 
+// login user google
+router.post("/google", loginUserGoogle)
+
+// login status
+router.get("/loggedin", loginStatus)
+
 // Register user
-router.post("/register", registerUser)
+// router.post("/register", registerUser)
 // Login user
-router.post("/login", loginUser)
+// router.post("/login", loginUser)
 
 
 module.exports = router
