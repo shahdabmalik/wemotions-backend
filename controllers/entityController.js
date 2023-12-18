@@ -35,7 +35,6 @@ const addEntity = async (req, res) => {
         // parse respnse
         const parsedResponse = JSON.parse(response.choices[0].message.content)
         // entity not found
-        console.log(parsedResponse);
         if (parsedResponse.result === false) {
             return res.status(404).json({ message: "There is no entity found with the given name" })
         }

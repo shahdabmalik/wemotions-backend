@@ -127,10 +127,40 @@ const downVoteIdea = async (req, res) => {
     }
 }
 
+//------------------------------- Get Ideas -------------------------------
+const getIdeas = async (req, res) => {
+
+    const sortOption = getSortOption(req.query.sort)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    try {
+        const motions = await Idea.find().sort(sortOption).limit(limit).skip(offset).exec()
+        res.status(200).json(motions)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error getting ideas, please try again." })
+    }
+}
+
+// get sort option function
+const getSortOption = (sortType) => {
+    switch (sortType) {
+        case 'A.I':
+            return { aiScore: -1 };
+        case 'Votes':
+            return { 'votes.count': -1 };
+        case 'Latest':
+            return { createdAt: -1 };
+        default:
+            return {}; // Default sorting, if needed
+    }
+};
 
 module.exports = {
     addIdea,
     removeIdea,
     voteIdea,
     downVoteIdea,
+    getIdeas
 }
