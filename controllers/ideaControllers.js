@@ -11,7 +11,7 @@ const addIdea = async (req, res) => {
     try {
         const { userIdea, entityId } = req.body;
         // userIdea validation
-        if (userIdea.length < 30) {
+        if (userIdea.length < 20) {
             return res.status(400).json({ message: "Idea should be valid and upto 30 characters long." })
         }
         // find entity
@@ -47,7 +47,7 @@ const addIdea = async (req, res) => {
     }
 }
 
-//----------------------------------- Delete and idea -----------------------------------
+//----------------------------------- Delete idea -----------------------------------
 
 const removeIdea = async (req, res) => {
 
@@ -81,7 +81,7 @@ const voteIdea = async (req, res) => {
 
         const { ideaId } = req.body;
         // validation - check idead exists
-        const idea = await Idea.findById(ideaId)
+        const idea = await Idea.findById(ideaId).populate('entity')
         if (!idea) {
             return res.status(404).json({ message: "Error voting, Idean not found" })
         }
@@ -94,7 +94,7 @@ const voteIdea = async (req, res) => {
         idea.votes.count = +1
         idea.votes.voters.push(req.user._id)
         await idea.save()
-        res.status(200).json({ message: "Voted" })
+        res.status(200).json({ message: "Voted", idea })
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Error voting, please try again" })
@@ -107,7 +107,7 @@ const downVoteIdea = async (req, res) => {
     try {
         const { ideaId } = req.body;
         // validation - check idead exists
-        const idea = await Idea.findById(ideaId)
+        const idea = await Idea.findById(ideaId).populate('entity')
         if (!idea) {
             return res.status(404).json({ message: "Error Disposing, Idean not found" })
         }
@@ -120,7 +120,7 @@ const downVoteIdea = async (req, res) => {
         idea.votes.count = idea.votes.count - 1
         idea.votes.voters = idea.votes.voters.filter((userId) => userId.toString() !== req.user._id.toString())
         await idea.save()
-        res.status(200).json({ message: "Vote disposed" })
+        res.status(200).json({ message: "Vote disposed", idea })
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Error voting, please try again" })
@@ -135,7 +135,7 @@ const getIdeas = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     try {
-        const motions = await Idea.find().sort(sortOption).limit(limit).skip(offset).exec()
+        const motions = await Idea.find().sort(sortOption).limit(limit).skip(offset).populate('entity').exec()
         res.status(200).json(motions)
     } catch (error) {
         console.log(error);

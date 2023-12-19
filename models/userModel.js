@@ -20,7 +20,9 @@ const userSchema = new mongoose.Schema({
     },
     slug: {
         type: String,
-        slug: "username"
+        slug: "username",
+        slugPaddingSize: 2,
+        unique: true
     }
 }, { timestamps: true });
 
