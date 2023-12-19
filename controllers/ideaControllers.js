@@ -91,7 +91,7 @@ const voteIdea = async (req, res) => {
             return res.status(400).json({ message: "You are already a voter" })
         }
         // add vote count and add user in voters
-        idea.votes.count = +1
+        idea.votes.count = idea.votes.count + 1
         idea.votes.voters.push(req.user._id)
         await idea.save()
         res.status(200).json({ message: "Voted", idea })
