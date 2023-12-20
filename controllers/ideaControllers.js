@@ -75,55 +75,73 @@ const removeIdea = async (req, res) => {
 
 }
 
-//----------------------------------- Vote an idea -----------------------------------
-const voteIdea = async (req, res) => {
+//----------------------------------- Handle Vote -----------------------------------
+const handleVote = async (req, res) => {
     try {
-
         const { ideaId } = req.body;
         // validation - check idead exists
-        const idea = await Idea.findById(ideaId).populate('entity')
+        const idea = await Idea.findById(ideaId);
         if (!idea) {
-            return res.status(404).json({ message: "Error voting, Idean not found" })
+            return res.status(404).json({ message: "Error Occurred, Idea not found" })
         }
-        // check if the user already voted
-        const alreadyVoted = idea.votes.voters.includes(req.user._id)
-        if (alreadyVoted) {
-            return res.status(400).json({ message: "You are already a voter" })
+        let update = {};
+
+        if (idea.votes.voters.includes(req.user._id)) {
+            // User is undoing their vote
+            update = {
+                $inc: { 'votes.count': -1 },
+                $pull: { 'votes.voters': req.user._id }
+            };
+            const updatedIdea = await Idea.findByIdAndUpdate(ideaId, update, { new: true }).populate('entity');
+            return res.status(200).json({ message: "Vote disposed", idea: updatedIdea })
+        } else {
+            // User is voting or switching from downvote to vote
+            update = {
+                $inc: { 'votes.count': 1, 'downVotes.count': idea?.downVotes?.downVoters.includes(req.user._id) ? -1 : 0 },
+                $addToSet: { 'votes.voters': req.user._id },
+                $pull: { 'downVotes.downVoters': req.user._id }
+            };
+            const updatedIdea = await Idea.findByIdAndUpdate(ideaId, update, { new: true }).populate('entity');
+            return res.status(200).json({ message: "Voted", idea: updatedIdea })
         }
-        // add vote count and add user in voters
-        idea.votes.count = idea.votes.count + 1
-        idea.votes.voters.push(req.user._id)
-        await idea.save()
-        res.status(200).json({ message: "Voted", idea })
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Error voting, please try again" })
+        return res.status(500).json({ message: "Error Occurred" })
     }
 }
 
-//----------------------------------- Dispose Vote -----------------------------------
-const downVoteIdea = async (req, res) => {
-
+//----------------------------------- Handle Down Vote -----------------------------------
+const handleDownVote = async (req, res) => {
     try {
         const { ideaId } = req.body;
         // validation - check idead exists
-        const idea = await Idea.findById(ideaId).populate('entity')
+        const idea = await Idea.findById(ideaId);
         if (!idea) {
-            return res.status(404).json({ message: "Error Disposing, Idean not found" })
+            return res.status(404).json({ message: "Error Occurred, Idea not found" })
         }
-        // check if the voter field contains userId
-        const validVoter = idea.votes.voters.includes(req.user._id)
-        if (!validVoter) {
-            return res.status(404).json({ message: "Error Disposing, You are not the voter" })
+        let update = {};
+
+        if (idea?.downVotes?.downVoters.includes(req.user._id)) {
+            // User is undoing their downvote
+            update = {
+                $inc: { 'downVotes.count': -1 },
+                $pull: { 'downVotes.downVoters': req.user._id }
+            };
+            const updatedIdea = await Idea.findByIdAndUpdate(ideaId, update, { new: true }).populate('entity');
+            return res.status(200).json({ message: "Down vote disposed", idea: updatedIdea })
+        } else {
+            // User is voting or switching from downvote to vote
+            update = {
+                $inc: { 'downVotes.count': 1, 'votes.count': idea?.votes?.voters.includes(req.user._id) ? -1 : 0 },
+                $addToSet: { 'downVotes.downVoters': req.user._id },
+                $pull: { 'votes.voters': req.user._id }
+            };
+            const updatedIdea = await Idea.findByIdAndUpdate(ideaId, update, { new: true }).populate('entity');
+            return res.status(200).json({ message: "Down Voted", idea: updatedIdea })
         }
-        // Remove vote count and user from voters
-        idea.votes.count = idea.votes.count - 1
-        idea.votes.voters = idea.votes.voters.filter((userId) => userId.toString() !== req.user._id.toString())
-        await idea.save()
-        res.status(200).json({ message: "Vote disposed", idea })
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Error voting, please try again" })
+        return res.status(500).json({ message: "Error Occurred" })
     }
 }
 
@@ -160,7 +178,7 @@ const getSortOption = (sortType) => {
 module.exports = {
     addIdea,
     removeIdea,
-    voteIdea,
-    downVoteIdea,
-    getIdeas
+    getIdeas,
+    handleVote,
+    handleDownVote
 }
