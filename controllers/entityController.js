@@ -84,10 +84,22 @@ const getAllEntities = async (req, res) => {
         console.log(error);
         res.status(500).json({ message: "Error Occurred, please try again." })
     }
+}
 
+//-------------------------------- Get single entity --------------------------------
+const getSingleEntity = async (req, res) => {
+    const { slug } = req.params
+    try {
+        const entity = await Entity.findOne({ slug })
+        res.status(200).json({ entity })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error Occurred" })
+    }
 }
 
 module.exports = {
     addEntity,
-    getAllEntities
+    getAllEntities,
+    getSingleEntity
 }

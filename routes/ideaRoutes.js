@@ -1,8 +1,10 @@
-const { addIdea, downVoteIdea, removeIdea, getIdeas, handleVote, handleDownVote } = require('../controllers/ideaControllers')
+const { addIdea, downVoteIdea, removeIdea, getIdeas, handleVote, handleDownVote, getEntityIdeas } = require('../controllers/ideaControllers')
 const protect = require('../middlewares/authMiddleware')
 
 const router = require('express').Router()
 
+// get ideas
+router.get("/", getIdeas)
 // submit Idea
 router.post("/add", protect, addIdea)
 // Remove Idea
@@ -11,8 +13,8 @@ router.delete("/remove", protect, removeIdea)
 router.post("/vote", protect, handleVote)
 // Dispose vote
 router.post("/downvote", protect, handleDownVote)
-// get ideas
-router.get("/", getIdeas)
+// get entity idea
+router.get("/entityidea", getEntityIdeas)
 
 
 

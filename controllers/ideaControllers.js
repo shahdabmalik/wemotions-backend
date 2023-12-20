@@ -161,6 +161,24 @@ const getIdeas = async (req, res) => {
     }
 }
 
+//----------------------------- Get ideas of entity -----------------------------
+const getEntityIdeas = async (req, res) => {
+    const entity = req.query.entity
+    const sortOption = getSortOption(req.query.sort)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit
+
+    try {
+        const motions = await Idea.find({ entity }).sort(sortOption).limit(limit).skip(offset).populate('entity').exec()
+        res.status(200).json({ motions })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error Occurred" })
+    }
+
+}
+
 // get sort option function
 const getSortOption = (sortType) => {
     switch (sortType) {
@@ -180,5 +198,6 @@ module.exports = {
     removeIdea,
     getIdeas,
     handleVote,
-    handleDownVote
+    handleDownVote,
+    getEntityIdeas
 }
