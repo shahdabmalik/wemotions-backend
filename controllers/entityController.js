@@ -15,7 +15,7 @@ const addEntity = async (req, res) => {
         const { name, type } = req.body
         // validation
         if (!name || !type) {
-            res.status(400).json({ message: "All fields are required." })
+            return res.status(400).json({ message: "All fields are required." })
         }
         const normalizedName = normalizeName(name);
         // find if entity with the same name exists
@@ -36,11 +36,11 @@ const addEntity = async (req, res) => {
         const parsedResponse = JSON.parse(response.choices[0].message.content)
         // entity not found
         if (parsedResponse.result === false) {
-            return res.status(404).json({ message: "There is no entity found with the given name" })
+            return res.status(404).json({ message: "Please enter valid entity name" })
         }
         // no description or entity found - sometime the result comes true but no entity found.
         if (parsedResponse.description.toLowerCase().includes("no information")) {
-            return res.status(404).json({ message: "There is no entity found with the given name" })
+            return res.status(404).json({ message: "Please enter valid given name" })
         }
         // again check if the entity with name from open ai exists
         const entityOpenaiExists = await Entity.exists({ name: normalizeName(parsedResponse.entity) })
@@ -98,8 +98,22 @@ const getSingleEntity = async (req, res) => {
     }
 }
 
+//-------------------------------- Entity by search --------------------------------
+const getEntityBySearch = async (req, res) => {
+    const { search, limit } = req.query
+    try {
+        const regex = new RegExp(search, 'i'); // 'i' for case-insensitive
+        const entities = await Entity.find({ name: { $regex: regex } }).limit(limit);
+        res.status(200).json(entities)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error Occurred" })
+    }
+}
+
 module.exports = {
     addEntity,
     getAllEntities,
-    getSingleEntity
+    getSingleEntity,
+    getEntityBySearch
 }
