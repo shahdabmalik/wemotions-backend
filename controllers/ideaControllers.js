@@ -154,7 +154,7 @@ const getIdeas = async (req, res) => {
     const offset = (page - 1) * limit;
     try {
         const motions = await Idea.find().sort(sortOption).limit(limit).skip(offset).populate('entity').exec()
-        res.status(200).json(motions)
+        res.status(200).json({motions})
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Error getting ideas, please try again." })
