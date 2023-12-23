@@ -166,7 +166,7 @@ const getEntityIdeas = async (req, res) => {
     const entity = req.query.entity
     const sortOption = getSortOption(req.query.sort)
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 8;
     const offset = (page - 1) * limit
 
     try {
