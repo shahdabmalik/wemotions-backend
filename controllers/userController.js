@@ -44,18 +44,24 @@ const loginUserGoogle = async (req, res) => {
 const loginStatus = async (req, res) => {
     const bearerToken = req.headers.authorization
     if (!bearerToken) {
-        return res.json(false)
+        return res.status(401).json(false)
     }
     const token = bearerToken.split(" ")[1]
     if (token === "null") {
-        return res.json(false)
+        return res.status(401).json(false)
     }
-    const verified = jwt.verify(token, process.env.JWT_SECRET)
-    if (verified) {
-        const user = await User.findById(verified.id).select("_id name email profile")
-        return res.status(200).json({ user, isLoggedIn: true })
+    try {
+        const verified = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(verified.id).select("_id name email profile");
+        return res.status(200).json({ user, isLoggedIn: true });
+    } catch (error) {
+        if (error instanceof jwt.TokenExpiredError) {
+            return res.status(401).json(false);
+        } else {
+            return res.status(500).json({ message: "Internal Server Error" });
+        }
     }
-    return res.json(false)
+
 }
 
 //--------------------------- Register User ---------------------------

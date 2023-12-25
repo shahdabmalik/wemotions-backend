@@ -70,16 +70,17 @@ const getAllEntities = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search;
         const offset = (page - 1) * limit;
         // get documets
-        const entities = await Entity.find().skip(offset).limit(limit);
-        const totalEntities = await Entity.countDocuments()
-        const totalPages = Math.ceil(totalEntities / limit)
-        res.status(200).json({
-            totalPages,
-            page,
-            result: entities
-        })
+        if (search !== null || search !== '') {
+            const regex = new RegExp(search, 'i'); // 'i' for case-insensitive
+            const entities = await Entity.find({ name: { $regex: regex } }).skip(offset).limit(limit);
+            res.status(200).json(entities)
+        } else {
+            const entities = await Entity.find().skip(offset).limit(limit);
+            res.status(200).json(entities)
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Error Occurred, please try again." })
