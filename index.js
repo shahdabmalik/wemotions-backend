@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const ideaRoutes = require("./routes/ideaRoutes")
 const userRoutes = require('./routes/userRoutes')
 const entityRoutes = require('./routes/entityRoutes')
+const contactRoutes = require('./routes/contactRoute')
 const errorHandler = require("./middlewares/errorMiddleware")
 const cors = require('cors')
 
@@ -21,6 +22,7 @@ app.use(cors({
 app.use("/api/auth", userRoutes)
 app.use("/api/idea", ideaRoutes)
 app.use("/api/entity", entityRoutes)
+app.use("/api/contact", contactRoutes)
 
 // Error Handler
 app.use(errorHandler)

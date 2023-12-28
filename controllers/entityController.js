@@ -15,7 +15,7 @@ const addEntity = async (req, res) => {
         const { name, type } = req.body
         // validation
         if (!name || !type) {
-            return res.status(400).json({ message: "All fields are required." })
+            return res.status(400).json({ message: "All fields are required."})
         }
         const normalizedName = normalizeName(name);
         // find if entity with the same name exists
@@ -74,7 +74,8 @@ const getAllEntities = async (req, res) => {
         const offset = (page - 1) * limit;
         // get documets
         if (search !== null || search !== '') {
-            const regex = new RegExp(search, 'i'); // 'i' for case-insensitive
+            const pattern = search?.split('')?.join('.*');
+            const regex = new RegExp(pattern, 'i'); // 'i' for case-insensitive
             const entities = await Entity.find({ name: { $regex: regex } }).skip(offset).limit(limit);
             res.status(200).json(entities)
         } else {
