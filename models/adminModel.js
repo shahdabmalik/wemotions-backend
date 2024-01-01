@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 
-const userSchema = new mongoose.Schema({
+const adminSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -19,13 +19,12 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['editor', 'admin'],
-        default: 'editor'
+        default: 'admin'
     }
 }, { timestamps: true });
 
 // Hashing password
-userSchema.pre('save', async function (next) {
+adminSchema.pre('save', async function (next) {
     // only update password field if modified
     if (!this.isModified('password')) {
         return next()
@@ -36,6 +35,6 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
-const PrivateUser = mongoose.model('PrivateUser', userSchema)
+const Admin = mongoose.model('admin', adminSchema)
 
-module.exports = PrivateUser
+module.exports = Admin

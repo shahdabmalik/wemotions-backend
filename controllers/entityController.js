@@ -15,7 +15,7 @@ const addEntity = async (req, res) => {
         const { name, type } = req.body
         // validation
         if (!name || !type) {
-            return res.status(400).json({ message: "All fields are required."})
+            return res.status(400).json({ message: "All fields are required." })
         }
         const normalizedName = normalizeName(name);
         // find if entity with the same name exists
@@ -70,18 +70,10 @@ const getAllEntities = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const search = req.query.search;
         const offset = (page - 1) * limit;
         // get documets
-        if (search !== null || search !== '') {
-            const pattern = search?.split('')?.join('.*');
-            const regex = new RegExp(pattern, 'i'); // 'i' for case-insensitive
-            const entities = await Entity.find({ name: { $regex: regex } }).skip(offset).limit(limit);
-            res.status(200).json(entities)
-        } else {
-            const entities = await Entity.find().skip(offset).limit(limit);
-            res.status(200).json(entities)
-        }
+        const entities = await Entity.find().skip(offset).limit(limit);
+        res.status(200).json(entities)
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Error Occurred, please try again." })
@@ -112,10 +104,34 @@ const getEntityBySearch = async (req, res) => {
         res.status(500).json({ message: "Error Occurred" })
     }
 }
+//-------------------------------- Entity by search --------------------------------
+const getAllEntitiesForAdmin = async (req, res) => {
+    try {
+        const entities = await Entity.find().select("name _id");
+        res.status(200).json(entities)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error Occurred" })
+    }
+}
+//-------------------------------- Entity by search --------------------------------
+const getSingleEntityById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const entity = await Entity.findById(id);
+        res.status(200).json(entity)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error Occurred" })
+    }
+}
+
 
 module.exports = {
     addEntity,
     getAllEntities,
     getSingleEntity,
-    getEntityBySearch
+    getEntityBySearch,
+    getAllEntitiesForAdmin,
+    getSingleEntityById
 }
