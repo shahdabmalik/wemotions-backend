@@ -15,12 +15,16 @@ const adminProtect = async (req, res, next) => {
         const verified = jwt.verify(token, process.env.JWT_SECRET);
         if (!verified) return res.status(401).json({ message: "Session Expired, Please Login" })
         // get user id from token
-        const admin = await Admin.findById(verified.id).select("_id name role email")
-        if (!admin) {
+        const user = await Admin.findById(verified.id).select("_id name role email")
+        if (!user) {
             return res.status(401).json({ message: "Session Expired, Please login" })
         }
-        req.admin = admin
-        next()
+        if (user.role === "admin" || user.role === "editor") {
+            req.user = user
+            return next()
+        } else {
+            return res.status(401).json({ message: "You are not authorized to perform this action" })
+        }
     } catch (error) {
         console.log(error);
         return res.status(401).json({ message: "Session Expired, Please login" })

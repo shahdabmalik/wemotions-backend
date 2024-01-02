@@ -62,9 +62,9 @@ module.exports = {
 // async function addAdmin() {
 //     try {
 //         const admin = await Admin.create({
-//             name: "",
-//             email: "",
-//             password: ""
+//             name: "Jack Jay",
+//             email: "test@test.com",
+//             password: "test@1234"
 //         })
 //         console.log(admin);
 //     } catch (error) {

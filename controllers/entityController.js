@@ -12,7 +12,7 @@ function normalizeName(name) {
 //------------------------------------ Add entity ------------------------------------
 const addEntity = async (req, res) => {
     try {
-        const { name, type } = req.body
+        const { name, type, socialMediaLinks, additionalLinks } = req.body
         // validation
         if (!name || !type) {
             return res.status(400).json({ message: "All fields are required." })
@@ -21,7 +21,7 @@ const addEntity = async (req, res) => {
         // find if entity with the same name exists
         const entityExists = await Entity.exists({ name: normalizedName })
         if (entityExists) {
-            return res.status(409).json({ message: "Entity with the given name already exists." })
+            return res.status(409).json({ message: "Page with the given name already exists." })
         }
         // get short description of entity from open ai
         // const prompt = `Give the breif description of the given entity, the entity can only be a person or organization. The entity is ${normalizedName}. I need three keys in json object "found", "entity" and "description". If you find the entity with the given name the found key will be true, otherwise it will be false. The entity key will be the name of entity. The description key will have the description of found entity.`
@@ -45,13 +45,15 @@ const addEntity = async (req, res) => {
         // again check if the entity with name from open ai exists
         const entityOpenaiExists = await Entity.exists({ name: normalizeName(parsedResponse.entity) })
         if (entityOpenaiExists) {
-            return res.status(409).json({ message: "Entity with the given name already exists." })
+            return res.status(409).json({ message: "Page with the given name already exists." })
         }
         // create entity
         const entity = await Entity.create({
             name: normalizeName(parsedResponse.entity),
             type: type,
             description: parsedResponse.description,
+            socialMediaLinks,
+            additionalLinks
         })
         if (entity) {
             res.status(201).json(entity)

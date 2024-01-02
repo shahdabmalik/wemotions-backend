@@ -19,6 +19,15 @@ const entitySchema = new mongoose.Schema({
         type: String,
         slug: "name"
     },
+    socialMediaLinks: [{
+        name: {
+            type: String
+        },
+        link: {
+            type: String
+        }
+    }],
+    additionalLinks: [String]
 
 }, { timestaps: true });
 

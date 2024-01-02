@@ -1,9 +1,10 @@
 const router = require('express').Router()
 const protect = require('../middlewares/authMiddleware')
 const { addEntity, getAllEntities, getSingleEntity, getEntityBySearch, getAllEntitiesForAdmin, getSingleEntityById } = require('../controllers/entityController')
+const adminProtect = require('../middlewares/authAdminMiddleware')
 
 // add entity
-router.post("/add", protect, addEntity)
+router.post("/add", adminProtect, addEntity)
 // get all entities
 router.get("/", getAllEntities)
 // get all entities
