@@ -5,7 +5,8 @@ const multer = require("multer");
 // Define Storage
 const storage = multer.diskStorage({
     destination: function (req, res, cb) {
-        cb(null, path.join(__dirname, "..", "tmp"))
+        // cb(null, path.join(__dirname, "..", "tmp"))
+        cb(null, "/tmp")
     },
     filename: function (req, file, cb) {
         cb(null, new Date().toISOString().replace(/:/g, "-") + "-" + file.originalname)
