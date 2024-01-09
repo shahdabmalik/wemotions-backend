@@ -27,7 +27,11 @@ const entitySchema = new mongoose.Schema({
             type: String
         }
     }],
-    additionalLinks: [String]
+    additionalLinks: [String],
+    image: {
+        type: Object,
+        default: {}
+    }
 
 }, { timestaps: true });
 

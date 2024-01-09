@@ -8,6 +8,7 @@ const contactRoutes = require('./routes/contactRoute')
 const adminRoutes = require('./routes/adminRoutes')
 const errorHandler = require("./middlewares/errorMiddleware")
 const cors = require('cors')
+const path = require("path");
 
 const app = express()
 const PORT = process.env.PORT || 4400
@@ -18,6 +19,8 @@ app.use(cors({
     origin: ["http://localhost:5173", process.env.CLIENT_URL],
     credentials: true
 }));
+// Set upload path
+app.use(express.static(path.join(__dirname, "/tmp")))
 
 // routes
 app.use("/api/auth", userRoutes)
@@ -25,7 +28,6 @@ app.use("/api/idea", ideaRoutes)
 app.use("/api/entity", entityRoutes)
 app.use("/api/contact", contactRoutes)
 app.use("/api/admin", adminRoutes)
-
 // Error Handler
 app.use(errorHandler)
 

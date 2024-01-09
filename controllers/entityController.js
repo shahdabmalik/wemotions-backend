@@ -1,5 +1,9 @@
 const OpenAI = require("openai");
+const cloudinary = require("cloudinary").v2;
+const sharp = require('sharp')
+const fs = require("fs");
 const Entity = require("../models/entityModel");
+const { fileSizeFormatter } = require("../utils/imageUpload");
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 })
@@ -12,7 +16,20 @@ function normalizeName(name) {
 //------------------------------------ Add entity ------------------------------------
 const addEntity = async (req, res) => {
     try {
-        const { name, type, socialMediaLinks, additionalLinks } = req.body
+        const { name, type, twitter, instagram, facebook, tiktok, youtube, link1, link2, link3 } = req.body
+
+        const socialMediaLinks = [
+            { name: "twitter", link: twitter && twitter.length > 0 ? twitter : null },
+            { name: "instagram", link: instagram && instagram.length > 0 ? instagram : null },
+            { name: "facebook", link: facebook && facebook.length > 0 ? facebook : null },
+            { name: "tiktok", link: tiktok && tiktok.length > 0 ? tiktok : null },
+            { name: "youtube", link: youtube && youtube.length > 0 ? youtube : null },
+        ]
+        const additionalLinks = [
+            link1 && link1.length > 0 ? link1 : null,
+            link2 && link2.length > 0 ? link2 : null,
+            link3 && link3.length > 0 ? link3 : null,
+        ]
         // validation
         if (!name || !type) {
             return res.status(400).json({ message: "All fields are required." })
@@ -47,16 +64,28 @@ const addEntity = async (req, res) => {
         if (entityOpenaiExists) {
             return res.status(409).json({ message: "Page with the given name already exists." })
         }
+        // file process and upload to cloudinary
+        let fileData = {}
+        const processedImage = await processImage(req.file.path)
+        const uploadResult = await uploadToCloudinary(processedImage)
+        fileData = {
+            name: req.file.originalname,
+            url: uploadResult.secure_url,
+            fileType: req.file.mimetype,
+            fileSize: fileSizeFormatter(uploadResult.bytes, 2),
+            public_id: uploadResult.public_id
+        }
         // create entity
         const entity = await Entity.create({
             name: normalizeName(parsedResponse.entity),
             type: type,
             description: parsedResponse.description,
             socialMediaLinks,
-            additionalLinks
-        })
+            additionalLinks,
+            image: fileData
+       })
         if (entity) {
-            res.status(201).json(entity)
+            res.status(201).json({ message: "Page Added" })
         } else {
             res.status(500).json({ message: "Error Occurred, please try again." })
         }
@@ -106,17 +135,17 @@ const getEntityBySearch = async (req, res) => {
         res.status(500).json({ message: "Error Occurred" })
     }
 }
-//-------------------------------- Entity by search --------------------------------
+//--------------------------------get entity for admin --------------------------------
 const getAllEntitiesForAdmin = async (req, res) => {
     try {
-        const entities = await Entity.find().select("name _id");
+        const entities = await Entity.find().select("name _id image");
         res.status(200).json(entities)
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Error Occurred" })
     }
 }
-//-------------------------------- Entity by search --------------------------------
+//--------------------------------Get Entity by ID --------------------------------
 const getSingleEntityById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -128,6 +157,43 @@ const getSingleEntityById = async (req, res) => {
     }
 }
 
+async function processImage(filePath) {
+    try {
+        return await sharp(filePath)
+            .resize(600, 600, { fit: 'cover' })
+            .jpeg({ mozjpeg: true, quality: 70 })
+            .toFormat("jpeg")
+            .toBuffer()
+    } catch (error) {
+        console.error('Error processing image:', error);
+        throw error;
+    }
+}
+
+async function uploadToCloudinary(buffer) {
+    try {
+        // This returns a promise which resolves with the upload result
+        return await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: 'image',
+                    folder: "wemotions/entities",
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            const stream = require('stream');
+            const bufferStream = new stream.PassThrough();
+            bufferStream.end(buffer);
+            bufferStream.pipe(uploadStream);
+        });
+    } catch (error) {
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
+    }
+}
 
 module.exports = {
     addEntity,
